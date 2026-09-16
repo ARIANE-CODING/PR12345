@@ -1,5 +1,6 @@
 const subjects = {
   physics: {
+    accent: '#2f6fed',
     icon: '🧪',
     name: 'Physics',
     description: 'Explore motion, energy, waves, and the foundations of the physical world.',
@@ -111,6 +112,7 @@ const subjects = {
     }
   },
   math: {
+    accent: '#7b61ff',
     icon: '📐',
     name: 'General Mathematics',
     description: 'Build problem-solving skills in algebra, functions, statistics, and mathematical reasoning.',
@@ -222,6 +224,7 @@ const subjects = {
     }
   },
   finite: {
+    accent: '#1ea97b',
     icon: '📊',
     name: 'Finite Mathematics',
     description: 'Apply mathematical methods in finite systems, matrices, probability, and decision-making.',
@@ -334,22 +337,26 @@ const subjects = {
   }
 };
 
+const state = {
+  activeSubject: 'physics',
+  activeQuarter: 1,
+  isOverview: true,
+  searchTerm: '',
+  subjectFilter: 'all'
+};
+
 const subjectNav = document.getElementById('subjectNav');
 const subjectContent = document.getElementById('subjectContent');
-
-let activeSubject = 'physics';
-let activeQuarter = 1;
-let isOverview = true;
 
 function buildSubjectButtons() {
   subjectNav.innerHTML = '';
 
   const homeButton = document.createElement('button');
   homeButton.type = 'button';
-  homeButton.className = `home-button ${isOverview ? 'active' : ''}`;
+  homeButton.className = `home-button ${state.isOverview ? 'active' : ''}`;
   homeButton.innerHTML = '<span class="icon">🏠</span><span>Overview</span>';
   homeButton.addEventListener('click', () => {
-    isOverview = true;
+    state.isOverview = true;
     render();
   });
   subjectNav.appendChild(homeButton);
@@ -357,52 +364,171 @@ function buildSubjectButtons() {
   Object.entries(subjects).forEach(([key, subject]) => {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = `subject-tab ${key === activeSubject && !isOverview ? 'active' : ''}`;
+    button.className = `subject-tab ${key === state.activeSubject && !state.isOverview ? 'active' : ''}`;
     button.innerHTML = `<span class="icon">${subject.icon}</span><span>${subject.name}</span>`;
     button.addEventListener('click', () => {
-      activeSubject = key;
-      activeQuarter = 1;
-      isOverview = false;
+      state.activeSubject = key;
+      state.activeQuarter = 1;
+      state.isOverview = false;
+      state.subjectFilter = key;
       render();
     });
     subjectNav.appendChild(button);
   });
 }
 
+function getFilteredSubjects() {
+  const query = state.searchTerm.trim().toLowerCase();
+
+  return Object.entries(subjects).filter(([key, subject]) => {
+    const passesFilter = state.subjectFilter === 'all' || key === state.subjectFilter;
+    const matchesSearch = !query ||
+      subject.name.toLowerCase().includes(query) ||
+      subject.description.toLowerCase().includes(query) ||
+      Object.values(subject.quarters).some((quarter) =>
+        quarter.title.toLowerCase().includes(query) ||
+        quarter.overview.toLowerCase().includes(query)
+      );
+
+    return passesFilter && matchesSearch;
+  });
+}
+
 function renderOverview() {
   const overviewPanel = document.createElement('div');
-  overviewPanel.className = 'overview-panel';
+  overviewPanel.className = 'hero-panel';
+
+  const heroContent = document.createElement('div');
+  heroContent.className = 'hero-content';
+
+  const copy = document.createElement('div');
+  copy.className = 'hero-copy';
+  copy.innerHTML = `
+    <h2>Learn smarter one quarter at a time.</h2>
+    <p>Explore engaging lessons, videos, animations, practice problems, and slide summaries for Physics, General Mathematics, and Finite Mathematics.</p>
+    <div class="hero-actions">
+      <button class="primary-btn" type="button" data-open-subject="physics">Open Physics</button>
+      <button class="secondary-btn" type="button" data-open-subject="math">Open General Mathematics</button>
+    </div>
+  `;
+
+  const stats = document.createElement('div');
+  stats.className = 'hero-stats';
+  stats.innerHTML = `
+    <div class="stat-box"><span class="value">3</span><span class="label">Subjects</span></div>
+    <div class="stat-box"><span class="value">12</span><span class="label">Quarter Modules</span></div>
+    <div class="stat-box"><span class="value">4</span><span class="label">Learning Types</span></div>
+  `;
+
+  heroContent.appendChild(copy);
+  heroContent.appendChild(stats);
+  overviewPanel.appendChild(heroContent);
+  subjectContent.appendChild(overviewPanel);
+
+  const searchPanel = document.createElement('div');
+  searchPanel.className = 'search-panel';
+
+  const searchRow = document.createElement('div');
+  searchRow.className = 'search-row';
+
+  const searchBox = document.createElement('div');
+  searchBox.className = 'search-box';
+  searchBox.innerHTML = '<span>🔍</span><input id="subjectSearch" type="text" placeholder="Search subjects or lessons..." value="' + state.searchTerm + '" />';
+
+  const allFilter = document.createElement('button');
+  allFilter.type = 'button';
+  allFilter.className = `filter-pill ${state.subjectFilter === 'all' ? 'active' : ''}`;
+  allFilter.textContent = 'All';
+  allFilter.addEventListener('click', () => {
+    state.subjectFilter = 'all';
+    render();
+  });
+
+  searchRow.appendChild(searchBox);
+  searchRow.appendChild(allFilter);
+  searchPanel.appendChild(searchRow);
+
+  const filterRow = document.createElement('div');
+  filterRow.className = 'filter-row';
+
+  Object.entries(subjects).forEach(([key, subject]) => {
+    const pill = document.createElement('button');
+    pill.type = 'button';
+    pill.className = `filter-pill ${state.subjectFilter === key ? 'active' : ''}`;
+    pill.textContent = `${subject.icon} ${subject.name}`;
+    pill.addEventListener('click', () => {
+      state.subjectFilter = key;
+      render();
+    });
+    filterRow.appendChild(pill);
+  });
+
+  searchPanel.appendChild(filterRow);
+  subjectContent.appendChild(searchPanel);
+
+  const overviewCards = document.createElement('div');
+  overviewCards.className = 'overview-panel';
+  overviewCards.style.marginTop = '22px';
 
   const header = document.createElement('div');
   header.className = 'overview-header';
-  header.innerHTML = '<h3>Subject Learning Dashboard</h3>';
-  overviewPanel.appendChild(header);
+  header.innerHTML = '<h3>Course Catalog</h3>';
+  overviewCards.appendChild(header);
 
   const grid = document.createElement('div');
   grid.className = 'overview-grid';
 
-  Object.entries(subjects).forEach(([key, subject]) => {
-    const card = document.createElement('div');
-    card.className = 'subject-card';
-    card.innerHTML = `
-      <div class="subject-icon">${subject.icon}</div>
-      <h4>${subject.name}</h4>
-      <p>${subject.description}</p>
-      <span class="start-btn">Open ${subject.name}</span>
-    `;
+  const filteredSubjects = getFilteredSubjects();
 
-    card.addEventListener('click', () => {
-      activeSubject = key;
-      activeQuarter = 1;
-      isOverview = false;
+  if (filteredSubjects.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.textContent = 'No matching subjects found. Try another search or choose a different filter.';
+    grid.appendChild(empty);
+  } else {
+    filteredSubjects.forEach(([key, subject]) => {
+      const card = document.createElement('div');
+      card.className = 'subject-card';
+      card.style.setProperty('--subject-color', subject.accent);
+      card.innerHTML = `
+        <div class="subject-icon">${subject.icon}</div>
+        <h4>${subject.name}</h4>
+        <p>${subject.description}</p>
+        <span class="start-btn">Open ${subject.name}</span>
+      `;
+
+      card.addEventListener('click', () => {
+        state.activeSubject = key;
+        state.activeQuarter = 1;
+        state.isOverview = false;
+        render();
+      });
+
+      grid.appendChild(card);
+    });
+  }
+
+  overviewCards.appendChild(grid);
+  subjectContent.appendChild(overviewCards);
+
+  const searchInput = document.getElementById('subjectSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', (event) => {
+      state.searchTerm = event.target.value;
       render();
     });
+  }
 
-    grid.appendChild(card);
+  const primaryButtons = document.querySelectorAll('[data-open-subject]');
+  primaryButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const key = button.getAttribute('data-open-subject');
+      state.activeSubject = key;
+      state.activeQuarter = 1;
+      state.isOverview = false;
+      render();
+    });
   });
-
-  overviewPanel.appendChild(grid);
-  subjectContent.appendChild(overviewPanel);
 }
 
 function renderQuarterTabs(quarterData) {
@@ -412,10 +538,10 @@ function renderQuarterTabs(quarterData) {
   Object.keys(quarterData).forEach((quarter) => {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = `quarter-tab ${Number(quarter) === activeQuarter ? 'active' : ''}`;
+    btn.className = `quarter-tab ${Number(quarter) === state.activeQuarter ? 'active' : ''}`;
     btn.textContent = `Quarter ${quarter}`;
     btn.addEventListener('click', () => {
-      activeQuarter = Number(quarter);
+      state.activeQuarter = Number(quarter);
       render();
     });
     quarterNav.appendChild(btn);
@@ -444,6 +570,52 @@ function renderSummaryStats(quarter) {
   });
 
   return strip;
+}
+
+function buildDownloadText(subjectName, quarterNumber, quarter) {
+  const lines = [
+    `${subjectName} - Quarter ${quarterNumber}`,
+    '',
+    quarter.title,
+    quarter.overview,
+    '',
+    'Info:',
+    ...quarter.info.map((item, index) => `${index + 1}. ${item}`),
+    '',
+    'Problems:',
+    ...quarter.problems.map((item, index) => `${index + 1}. ${item}`),
+    '',
+    'Slides:',
+    ...quarter.slides.map((slide, index) => `${index + 1}. ${slide.title}: ${slide.content}`)
+  ];
+
+  return lines.join('\n');
+}
+
+function renderDownloadButton(subjectName, quarterNumber, quarter) {
+  const row = document.createElement('div');
+  row.className = 'download-row';
+
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'download-btn';
+  button.textContent = 'Download Quarter Notes';
+
+  button.addEventListener('click', () => {
+    const text = buildDownloadText(subjectName, quarterNumber, quarter);
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${subjectName.toLowerCase().replace(/\s+/g, '-')}-quarter-${quarterNumber}-notes.txt`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  });
+
+  row.appendChild(button);
+  return row;
 }
 
 function renderResourceCard(title, items, type) {
@@ -533,8 +705,8 @@ function renderResourceCard(title, items, type) {
 }
 
 function renderSubjectPage() {
-  const subject = subjects[activeSubject];
-  const quarter = subject.quarters[activeQuarter];
+  const subject = subjects[state.activeSubject];
+  const quarter = subject.quarters[state.activeQuarter];
 
   subjectContent.innerHTML = `
     <div class="subject-header">
@@ -554,8 +726,8 @@ function renderSubjectPage() {
   prevButton.className = 'nav-action';
   prevButton.textContent = '← Previous Quarter';
   prevButton.addEventListener('click', () => {
-    if (activeQuarter > 1) {
-      activeQuarter -= 1;
+    if (state.activeQuarter > 1) {
+      state.activeQuarter -= 1;
       render();
     }
   });
@@ -565,8 +737,8 @@ function renderSubjectPage() {
   nextButton.className = 'nav-action';
   nextButton.textContent = 'Next Quarter →';
   nextButton.addEventListener('click', () => {
-    if (activeQuarter < 4) {
-      activeQuarter += 1;
+    if (state.activeQuarter < 4) {
+      state.activeQuarter += 1;
       render();
     }
   });
@@ -583,6 +755,7 @@ function renderSubjectPage() {
   overview.innerHTML = `<h3>${quarter.title}</h3><p>${quarter.overview}</p>`;
   panel.appendChild(overview);
   panel.appendChild(renderSummaryStats(quarter));
+  panel.appendChild(renderDownloadButton(subject.name, state.activeQuarter, quarter));
 
   const grid = document.createElement('div');
   grid.className = 'resource-grid';
@@ -600,7 +773,7 @@ function renderSubjectPage() {
 function render() {
   buildSubjectButtons();
 
-  if (isOverview) {
+  if (state.isOverview) {
     subjectContent.innerHTML = '';
     renderOverview();
   } else {
@@ -609,3 +782,104 @@ function render() {
 }
 
 render();
+
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && !state.isOverview) {
+    state.isOverview = true;
+    render();
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"}]} ivoq. Need ensure no malformed JSON due stray quotes. Let's verify end. There is huge string with trailing `"}` maybe from previous attempt error. Need fix. Let's be careful. We need valid JSON. Maybe simpler to use functions.create_or_update_file not push_files? But push_files is fine. Need provide valid JSON string, no weird trailing actors. Need ensure content string escape quotes properly. We can pass as JSON; easier with multi-line string in tool call value. Need ensure not include invalid `"` at end. We need close JSON object. Let's do one file at a time to reduce risk? Good. Use push_files with only files is okay. Need valid JSON parse. I'll craft carefully; no stray characters. Use standard quoting for all. Let's do final content strings in single JSON with proper escaping by system automatically as long as valid. There's long content though but okay. I'll remove huge extra blank lines at end. Let's ensure final } closes object for push_files. Good. Let's do. We don't need to read repo now. Good. Let's proceed. Need ensure no backticks outside JSON strings. We'll use valid JSON object in tool call. Let's do final. We need maybe use multi_tool_use parallel not necessary. For one tool okay. Let's proceed. Use push_files with 3 files. We need no more than one branch maybe yes. Let's do. Use commentary tool call as functions.push_files. Good. Let's ensure content includes `subjectFilter` and `renderOverview` etc all from script; no syntax errors. The `renderOverview` includes `filterRow` after searchPanel preceding before grid. Good. That works. Need no unsupported `data-open-subject` in HTML not in script. okay. Search filter 
