@@ -1,22 +1,23 @@
 const subjects = {
   physics: {
+    icon: '🧪',
     name: 'Physics',
-    description: 'Explore motion, energy, waves, and the laws that explain the physical world.',
+    description: 'Explore motion, energy, waves, and the foundations of the physical world.',
     quarters: {
       1: {
         title: 'Quarter 1: Motion and Measurements',
         overview: 'Students learn how quantities like distance, speed, velocity, and acceleration are measured and represented.',
         info: [
-          'Study the relationship between speed, velocity, and acceleration.',
-          'Learn how to interpret graphs of motion and measure physical quantities accurately.',
-          'Understand the use of SI units and scientific notation in problem solving.'
+          'Measure physical quantities using SI units and scientific notation.',
+          'Understand the difference between distance and displacement.',
+          'Interpret motion graphs and calculate average speed and acceleration.'
         ],
         videos: [
           { label: 'Introduction to Motion', url: 'https://www.youtube.com/embed/6lqz7J_xs3o' },
           { label: 'Kinematics Overview', url: 'https://www.youtube.com/embed/9wYv6c2yQXg' }
         ],
         animations: [
-          'Velocity-time graph animation showing how slope relates to acceleration.',
+          'Velocity-time graph animation showing acceleration as the slope of a graph.',
           'Free-fall simulation demonstrating constant gravitational acceleration.'
         ],
         problems: [
@@ -25,17 +26,17 @@ const subjects = {
           'Convert 72 km/h to m/s.'
         ],
         slides: [
-          { title: 'Motion Basics', content: 'Motion is measured by displacement, velocity, and acceleration.' },
-          { title: 'Units and Graphs', content: 'Graphs help describe how motion changes over time.' }
+          { title: 'Motion Basics', content: 'Motion is described by displacement, velocity, and acceleration.' },
+          { title: 'Units and Graphs', content: 'Graphs help us understand changes in motion over time.' }
         ]
       },
       2: {
         title: 'Quarter 2: Forces and Energy',
         overview: 'Students examine Newton’s laws, force, work, power, and the conservation of energy.',
         info: [
-          'Discuss the forces acting on objects and the effect of net force.',
-          'Define work, power, and mechanical energy in everyday situations.',
-          'Apply the conservation of energy to moving systems.'
+          'Explain how net force affects the motion of an object.',
+          'Connect work, power, and mechanical energy to everyday examples.',
+          'Apply the conservation of energy to moving objects.'
         ],
         videos: [
           { label: 'Forces and Newton’s Laws', url: 'https://www.youtube.com/embed/kKKM8Y-u7ds' },
@@ -60,24 +61,24 @@ const subjects = {
         overview: 'Students study sound, light, wave properties, and how energy travels through different media.',
         info: [
           'Differentiate between transverse and longitudinal waves.',
-          'Explore wavelength, frequency, amplitude, and speed of waves.',
-          'Understand reflection, refraction, and how light behaves in materials.'
+          'Explore wavelength, frequency, amplitude, and wave speed.',
+          'Understand reflection, refraction, and the behavior of light.'
         ],
         videos: [
           { label: 'Wave Properties', url: 'https://www.youtube.com/embed/2a1b3obv4ts' },
           { label: 'Light and Optics', url: 'https://www.youtube.com/embed/8G-bRrOg1PI' }
         ],
         animations: [
-          'Wave pulse travelling across a medium with amplitude changes.',
+          'Wave pulse travelling across a medium with changing amplitude.',
           'Ray diagram animation showing refraction through a lens.'
         ],
         problems: [
           'A wave has a frequency of 4 Hz and a wavelength of 1.5 m. Find its speed.',
           'If the speed of sound is 340 m/s and the wavelength is 0.5 m, what is the frequency?',
-          'A light ray bends as it enters a denser medium. Describe what happens to speed and wavelength.'
+          'A light ray bends as it enters a denser medium. Describe what happens to its speed and wavelength.'
         ],
         slides: [
-          { title: 'Wave Characteristics', content: 'Waves carry energy and can be described by amplitude, frequency, and wavelength.' },
+          { title: 'Wave Characteristics', content: 'Waves carry energy and are described by amplitude, frequency, and wavelength.' },
           { title: 'Refraction', content: 'Light changes direction when it enters a different medium.' }
         ]
       },
@@ -110,6 +111,7 @@ const subjects = {
     }
   },
   math: {
+    icon: '📐',
     name: 'General Mathematics',
     description: 'Build problem-solving skills in algebra, functions, statistics, and mathematical reasoning.',
     quarters: {
@@ -117,7 +119,7 @@ const subjects = {
         title: 'Quarter 1: Algebra Foundations',
         overview: 'Students review expressions, equations, variables, and basic algebraic procedures.',
         info: [
-          'Simplify algebraic expressions using order of operations and properties of equality.',
+          'Simplify algebraic expressions using properties of operations.',
           'Solve linear equations and inequalities with one variable.',
           'Translate real-world situations into algebraic expressions.'
         ],
@@ -220,6 +222,7 @@ const subjects = {
     }
   },
   finite: {
+    icon: '📊',
     name: 'Finite Mathematics',
     description: 'Apply mathematical methods in finite systems, matrices, probability, and decision-making.',
     quarters: {
@@ -294,7 +297,7 @@ const subjects = {
         problems: [
           'How many ways can 3 books be arranged on a shelf?',
           'A committee of 2 is chosen from 5 students. How many possible committees?',
-          'What is the probability of drawing a king from a standard deck?' 
+          'What is the probability of drawing a king from a standard deck?'
         ],
         slides: [
           { title: 'Counting Techniques', content: 'Permutations and combinations count possible outcomes carefully.' },
@@ -343,7 +346,7 @@ function buildSubjectButtons() {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = `subject-tab ${key === activeSubject ? 'active' : ''}`;
-    button.textContent = subject.name;
+    button.innerHTML = `<span class="icon">${subject.icon}</span><span>${subject.name}</span>`;
     button.addEventListener('click', () => {
       activeSubject = key;
       activeQuarter = 1;
@@ -372,12 +375,42 @@ function renderQuarterTabs(quarterData) {
   return quarterNav;
 }
 
+function renderSummaryStats(quarter) {
+  const strip = document.createElement('div');
+  strip.className = 'summary-strip';
+
+  const stats = [
+    { label: 'Info', count: quarter.info.length },
+    { label: 'Videos', count: quarter.videos.length },
+    { label: 'Animations', count: quarter.animations.length },
+    { label: 'Problems', count: quarter.problems.length },
+    { label: 'Slides', count: quarter.slides.length }
+  ];
+
+  stats.forEach((stat) => {
+    const item = document.createElement('div');
+    item.className = 'summary-item';
+    item.innerHTML = `<span class="count">${stat.count}</span><span class="label">${stat.label}</span>`;
+    strip.appendChild(item);
+  });
+
+  return strip;
+}
+
 function renderResourceCard(title, items, type) {
   const card = document.createElement('div');
   card.className = 'resource-card';
 
   const heading = document.createElement('h4');
-  heading.textContent = title;
+  const iconMap = {
+    list: '📘',
+    video: '🎬',
+    animation: '✨',
+    problem: '✏️',
+    slide: '🧾'
+  };
+
+  heading.innerHTML = `<span class="badge">${iconMap[type]}</span><span>${title}</span>`;
   card.appendChild(heading);
 
   if (type === 'list') {
@@ -391,6 +424,8 @@ function renderResourceCard(title, items, type) {
   }
 
   if (type === 'video') {
+    const wrap = document.createElement('div');
+    wrap.className = 'video-grid';
     items.forEach((video) => {
       const iframe = document.createElement('iframe');
       iframe.className = 'video-frame';
@@ -398,15 +433,16 @@ function renderResourceCard(title, items, type) {
       iframe.title = video.label;
       iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
       iframe.allowFullscreen = true;
-      card.appendChild(iframe);
+      wrap.appendChild(iframe);
 
       const link = document.createElement('a');
       link.href = video.url;
       link.target = '_blank';
       link.rel = 'noopener noreferrer';
       link.textContent = `Open: ${video.label}`;
-      card.appendChild(link);
+      wrap.appendChild(link);
     });
+    card.appendChild(wrap);
   }
 
   if (type === 'animation') {
@@ -455,7 +491,7 @@ function render() {
 
   subjectContent.innerHTML = `
     <div class="subject-header">
-      <h2>${subject.name}</h2>
+      <h2>${subject.icon} ${subject.name}</h2>
       <p>${subject.description}</p>
     </div>
   `;
@@ -470,6 +506,7 @@ function render() {
   overview.className = 'overview-box';
   overview.innerHTML = `<h3>${quarter.title}</h3><p>${quarter.overview}</p>`;
   panel.appendChild(overview);
+  panel.appendChild(renderSummaryStats(quarter));
 
   const grid = document.createElement('div');
   grid.className = 'resource-grid';
