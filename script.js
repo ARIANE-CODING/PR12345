@@ -339,21 +339,70 @@ const subjectContent = document.getElementById('subjectContent');
 
 let activeSubject = 'physics';
 let activeQuarter = 1;
+let isOverview = true;
 
 function buildSubjectButtons() {
   subjectNav.innerHTML = '';
+
+  const homeButton = document.createElement('button');
+  homeButton.type = 'button';
+  homeButton.className = `home-button ${isOverview ? 'active' : ''}`;
+  homeButton.innerHTML = '<span class="icon">🏠</span><span>Overview</span>';
+  homeButton.addEventListener('click', () => {
+    isOverview = true;
+    render();
+  });
+  subjectNav.appendChild(homeButton);
+
   Object.entries(subjects).forEach(([key, subject]) => {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = `subject-tab ${key === activeSubject ? 'active' : ''}`;
+    button.className = `subject-tab ${key === activeSubject && !isOverview ? 'active' : ''}`;
     button.innerHTML = `<span class="icon">${subject.icon}</span><span>${subject.name}</span>`;
     button.addEventListener('click', () => {
       activeSubject = key;
       activeQuarter = 1;
+      isOverview = false;
       render();
     });
     subjectNav.appendChild(button);
   });
+}
+
+function renderOverview() {
+  const overviewPanel = document.createElement('div');
+  overviewPanel.className = 'overview-panel';
+
+  const header = document.createElement('div');
+  header.className = 'overview-header';
+  header.innerHTML = '<h3>Subject Learning Dashboard</h3>';
+  overviewPanel.appendChild(header);
+
+  const grid = document.createElement('div');
+  grid.className = 'overview-grid';
+
+  Object.entries(subjects).forEach(([key, subject]) => {
+    const card = document.createElement('div');
+    card.className = 'subject-card';
+    card.innerHTML = `
+      <div class="subject-icon">${subject.icon}</div>
+      <h4>${subject.name}</h4>
+      <p>${subject.description}</p>
+      <span class="start-btn">Open ${subject.name}</span>
+    `;
+
+    card.addEventListener('click', () => {
+      activeSubject = key;
+      activeQuarter = 1;
+      isOverview = false;
+      render();
+    });
+
+    grid.appendChild(card);
+  });
+
+  overviewPanel.appendChild(grid);
+  subjectContent.appendChild(overviewPanel);
 }
 
 function renderQuarterTabs(quarterData) {
@@ -483,11 +532,9 @@ function renderResourceCard(title, items, type) {
   return card;
 }
 
-function render() {
+function renderSubjectPage() {
   const subject = subjects[activeSubject];
   const quarter = subject.quarters[activeQuarter];
-
-  buildSubjectButtons();
 
   subjectContent.innerHTML = `
     <div class="subject-header">
@@ -498,6 +545,35 @@ function render() {
 
   const quarterTabs = renderQuarterTabs(subject.quarters);
   subjectContent.appendChild(quarterTabs);
+
+  const controls = document.createElement('div');
+  controls.className = 'quarter-controls';
+
+  const prevButton = document.createElement('button');
+  prevButton.type = 'button';
+  prevButton.className = 'nav-action';
+  prevButton.textContent = '← Previous Quarter';
+  prevButton.addEventListener('click', () => {
+    if (activeQuarter > 1) {
+      activeQuarter -= 1;
+      render();
+    }
+  });
+
+  const nextButton = document.createElement('button');
+  nextButton.type = 'button';
+  nextButton.className = 'nav-action';
+  nextButton.textContent = 'Next Quarter →';
+  nextButton.addEventListener('click', () => {
+    if (activeQuarter < 4) {
+      activeQuarter += 1;
+      render();
+    }
+  });
+
+  controls.appendChild(prevButton);
+  controls.appendChild(nextButton);
+  subjectContent.appendChild(controls);
 
   const panel = document.createElement('div');
   panel.className = 'quarter-panel';
@@ -519,6 +595,17 @@ function render() {
 
   panel.appendChild(grid);
   subjectContent.appendChild(panel);
+}
+
+function render() {
+  buildSubjectButtons();
+
+  if (isOverview) {
+    subjectContent.innerHTML = '';
+    renderOverview();
+  } else {
+    renderSubjectPage();
+  }
 }
 
 render();
